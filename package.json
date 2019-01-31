@@ -1,0 +1,32 @@
+{
+  "name": "http-hook",
+  "version": "0.1.0",
+  "description": "Fast hooks for modifying HTTP requests and responses",
+  "main": "lib/index.js",
+  "source": "src/index.ts",
+  "module": "lib/index.mjs",
+  "umd:main": "lib/index.umd.js",
+  "repository": "https://github.com/usermirror/http-hook.git",
+  "author": "UserMirror, Inc. <open@usermirror.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "ava",
+    "clean": "rm -rf lib",
+    "build": "microbundle",
+    "dev": "microbundle watch"
+  },
+  "devDependencies": {
+    "ava": "^1.0.1",
+    "microbundle": "^0.9.0",
+    "ts-node": "^7.0.1"
+  },
+  "ava": {
+    "compileEnhancements": false,
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
+  }
+}
