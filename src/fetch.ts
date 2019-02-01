@@ -1,5 +1,5 @@
 import Global from './global'
-import { HookConfig } from './types'
+import { HookConfig, modifyRequest, modifyResponse } from './hooks'
 
 let _originalFetch = Global.fetch
 let _hooks = {
@@ -8,48 +8,6 @@ let _hooks = {
 }
 
 const HookFormData = function() {}
-
-async function modifyRequest(req: Request, hooks: Function[]) {
-  let modifiedReq: Request
-
-  for (let i = 0; i < hooks.length; i++) {
-    let hook = hooks[i]
-    let result = hook(modifiedReq || req)
-
-    if (result instanceof Promise) {
-      modifiedReq = await result
-    } else {
-      modifiedReq = result
-    }
-  }
-
-  if (!modifiedReq) {
-    return req
-  }
-
-  return modifiedReq
-}
-
-async function modifyResponse(res: Response, hooks: Function[]) {
-  let modifiedRes: Response
-
-  for (let i = 0; i < hooks.length; i++) {
-    let hook = hooks[i]
-    let result = hook(modifiedRes || res)
-
-    if (result instanceof Promise) {
-      modifiedRes = await result
-    } else {
-      modifiedRes = result
-    }
-  }
-
-  if (!modifiedRes) {
-    return res
-  }
-
-  return modifiedRes
-}
 
 function FetchWithHttpHook(url: string, init: any) {
   if (!init) {
@@ -102,23 +60,27 @@ function generateRequest(init: any) {
   return new Global.Request(init.url, reqInit)
 }
 
-export function attach(hook: HookConfig) {
-  if (hook.request) {
-    _hooks.request.push(hook.request)
+export function attach(config: HookConfig) {
+  if (config.request) {
+    _hooks.request.push(config.request)
   }
 
-  if (hook.response) {
-    _hooks.response.push(hook.response)
+  if (config.response) {
+    _hooks.response.push(config.response)
   }
 
-  Global.fetch = FetchWithHttpHook
+  if (config.globals) {
+    Global.fetch = FetchWithHttpHook
+  }
 }
 
 export function reset() {
   _hooks.request = []
   _hooks.response = []
 
-  Global.fetch = _originalFetch
+  if (Global.fetch !== _originalFetch) {
+    Global.fetch = _originalFetch
+  }
 }
 
-export default { attach, reset }
+export default { attach, reset, FetchWithHttpHook }

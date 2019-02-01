@@ -1,0 +1,96 @@
+<html>
+  <body>
+    <div>
+      Original Request:
+      <pre id="og-req"></pre>
+    </div>
+    <div>
+      Modified Request:
+      <pre id="req"></pre>
+    </div>
+    <div>
+      Original Response:
+      <pre id="og-res"></pre>
+    </div>
+    <div>
+      Modified Response:
+      <pre id="res"></pre>
+    </div>
+    <script src="../../lib/index.umd.js"></script>
+    <script>
+      let qs = new URLSearchParams(window.location.search)
+      let id = qs.get('id') || 1
+      let url = `https://jsonplaceholder.typicode.com/users/${id}`
+
+      document.getElementById('og-req').innerText = url
+
+      function request(req) {
+        let reqInit = {}
+
+        for (let opt in req) {
+          reqInit[opt] = req[opt]
+        }
+
+        let mReq = new Request(req.url, reqInit)
+
+        document.getElementById('req').innerText = mReq.url
+
+        return mReq
+      }
+
+      let REDACTED = 'REDACTED'
+
+      function modify(user) {
+        user.email = REDACTED
+        user.name = REDACTED
+        user.address.street = REDACTED
+        user.address.suite = REDACTED
+        user.address.city = REDACTED
+        user.address.zipcode = REDACTED
+        user.address.geo.lat = REDACTED
+        user.address.geo.lng = REDACTED
+        user.phone = REDACTED
+
+        return user
+      }
+
+      async function response(res) {
+        let mRes = { ...res }
+
+        try {
+          let json = JSON.parse(res.text)
+
+          document.getElementById('og-res').innerText =
+            res.finalUrl + '\n' + JSON.stringify(json, null, 2)
+
+          let mJson = modify(json)
+
+          document.getElementById('res').innerText =
+            mRes.finalUrl + '\n' + JSON.stringify(mJson, null, 2)
+
+          mRes.data = mRes.text = JSON.stringify(mJson)
+        } catch (err) {
+          // ignore err
+          document.getElementById('og-res').innerText =
+            res.url + '\n' + res.text
+        }
+
+        return mRes
+      }
+
+      httpHook.attach({ request, response })
+
+      console.log('[REQ] XMLHttpRequest', url)
+
+      function onLoad() {
+        console.log('[RES] XMLHttpRequest', this.responseText)
+      }
+
+      let oReq = new XMLHttpRequest()
+
+      oReq.addEventListener('load', onLoad)
+      oReq.open('GET', url)
+      oReq.send()
+    </script>
+  </body>
+</html>

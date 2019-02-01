@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>LogRocket Example</title>
+  </head>
+  <body>
+    <div>
+      Request Count:
+      <pre id="reqs-count"></pre>
+      Latest Request:
+      <pre id="reqs"></pre>
+    </div>
+    <script src="../../lib/index.umd.js"></script>
+    <script>
+      let reqs = []
+
+      const request = req => {
+        reqs.push(req)
+
+        write()
+
+        return req
+      }
+
+      let td = new TextDecoder()
+
+      function write() {
+        document.getElementById('reqs-count').innerText =
+          reqs.length + ' request' + (reqs.length !== 1 ? 's' : '')
+        document.getElementById('reqs').innerText = JSON.stringify(
+          unescape(td.decode((reqs[reqs.length - 1] || {}).body))
+        )
+      }
+
+      write()
+
+      httpHook.attach({ request })
+    </script>
+    <script
+      src="https://cdn.logrocket.io/LogRocket.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      let qs = new URLSearchParams(window.location.search)
+      let LRID = qs.get('lrid') || 'vj0rbm/demo-um'
+      window.LogRocket && window.LogRocket.init(LRID)
+    </script>
+  </body>
+</html>

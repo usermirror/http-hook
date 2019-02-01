@@ -1,6 +1,6 @@
 {
   "name": "http-hook",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fast hooks for modifying HTTP requests and responses",
   "main": "lib/index.js",
   "source": "src/index.ts",

@@ -1,14 +1,29 @@
 import hookFetch from './fetch'
-import { HttpHook, HookConfig } from './types'
+import hookXHR from './xhr'
+import { HttpHook, HookConfig } from './hooks'
 
-const httpHook: HttpHook = { attach, reset }
+const httpHook: HttpHook = {
+  attach,
+  reset,
+  fetch: hookFetch.FetchWithHttpHook,
+  XMLHttpRequest: hookXHR.XHRWithHttpHook
+}
 
-function attach(input: HookConfig) {
+const defaultHookConfig = { globals: true }
+
+function attach(input: HookConfig = defaultHookConfig) {
+  input = {
+    ...defaultHookConfig,
+    ...input
+  }
+
   hookFetch.attach(input)
+  hookXHR.attach(input)
 }
 
 function reset() {
   hookFetch.reset()
+  hookXHR.reset()
 }
 
 export { HttpHook, HookConfig }
