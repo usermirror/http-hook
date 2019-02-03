@@ -20,6 +20,10 @@
       src="https://unpkg.com/http-hook@0.1.1/lib/index.umd.js"
       crossorigin="anonymous"
     ></script>
+    <script
+      src="https://unpkg.com/subtle-rsa/lib/index.umd.js"
+      crossorigin="anonymous"
+    ></script>
     <script>
       let qs = new URLSearchParams(window.location.search)
       let id = qs.get('id') || 1
@@ -42,18 +46,24 @@
         return mReq
       }
 
-      let REDACTED = 'REDACTED'
+      let rsa = new subtleRsa({})
 
-      function modify(user) {
-        user.email = REDACTED
-        user.name = REDACTED
-        user.address.street = REDACTED
-        user.address.suite = REDACTED
-        user.address.city = REDACTED
-        user.address.zipcode = REDACTED
-        user.address.geo.lat = REDACTED
-        user.address.geo.lng = REDACTED
-        user.phone = REDACTED
+      function b2h(buffer) {
+        return Array.prototype.map
+          .call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2))
+          .join('')
+      }
+
+      async function modify(user) {
+        user.email = b2h(await rsa.encrypt(user.email))
+        user.name = b2h(await rsa.encrypt(user.name))
+        user.address.street = b2h(await rsa.encrypt(user.address.street))
+        user.address.suite = b2h(await rsa.encrypt(user.address.suite))
+        user.address.city = b2h(await rsa.encrypt(user.address.city))
+        user.address.zipcode = b2h(await rsa.encrypt(user.address.zipcode))
+        user.address.geo.lat = b2h(await rsa.encrypt(user.address.geo.lat))
+        user.address.geo.lng = b2h(await rsa.encrypt(user.address.geo.lng))
+        user.phone = b2h(await rsa.encrypt(user.phone))
 
         return user
       }
@@ -66,7 +76,7 @@
         document.getElementById('og-res').innerText =
           res.url + '\n' + JSON.stringify(json, null, 2)
 
-        let mJson = modify(json)
+        let mJson = await modify(json)
         let mRes = new Response(JSON.stringify(mJson))
 
         document.getElementById('res').innerText =
